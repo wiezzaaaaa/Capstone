@@ -20,13 +20,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['request_reschedule']))
 
     $update_query = "UPDATE schedules 
                      SET status = 'Reschedule Requested', 
-                         notes = CONCAT(COALESCE(notes, ''), ' | Request: ', ?, ' ', ?, ' | Reason: ', ?)
+                         notes = CONCAT('Request: ', ?, ' ', ?, ' | Reason: ', ?)
                      WHERE id = ?";
 
     if ($stmt = $conn->prepare($update_query)) {
         $stmt->bind_param("sssi", $new_date, $new_time, $reason, $schedule_id);
         if ($stmt->execute()) {
-            $message = "<div class='alert success'><i class='fa fa-check-circle'></i> Tagumpay na naipadala ang iyong request para sa pagbabago ng iskedyul!</div>";
+            // ── Notify Admin and Super Admin about the reschedule request ──
+            $sched_info = $conn->query("SELECT patient_name, service_type FROM schedules WHERE id = $schedule_id");
+            if ($sched_info && $sched_row = $sched_info->fetch_assoc()) {
+                $patient = $sched_row['patient_name'];
+                $service = $sched_row['service_type'];
+                $notif_title = "Reschedule Request: $patient";
+                $notif_message = "$patient is requesting to reschedule their $service appointment to $new_date" . ($new_time ? " at $new_time" : "") . ". Reason: $reason";
+                $notif_type = 'reschedule_request';
+
+                // Notify Admin
+                $n1 = $conn->prepare("INSERT INTO notifications (user_id, target_role, schedule_id, title, message, type) VALUES (0, 'Admin', ?, ?, ?, ?)");
+                $n1->bind_param("isss", $schedule_id, $notif_title, $notif_message, $notif_type);
+                $n1->execute();
+                $n1->close();
+
+                // Notify Super Admin
+                $n2 = $conn->prepare("INSERT INTO notifications (user_id, target_role, schedule_id, title, message, type) VALUES (0, 'Super Admin', ?, ?, ?, ?)");
+                $n2->bind_param("isss", $schedule_id, $notif_title, $notif_message, $notif_type);
+                $n2->execute();
+                $n2->close();
+            }
+
+            $message = "<div class='alert success'><i class='fa fa-check-circle'></i><span>Your reschedule request has been submitted successfully.</span></div>";
         } else {
             $message = "<div class='alert error'><i class='fa fa-triangle-exclamation'></i> Nabigo ang pag-request: " . $conn->error . "</div>";
         }
@@ -176,7 +198,7 @@ if (count($patient_names) > 0) {
             box-shadow: 0 4px 15px rgba(0,0,0,0.04);
         }
 
-        .alert { padding: 12px 15px; border-radius: 10px; margin-bottom: 20px; font-weight: 500; font-size: 0.95rem; text-align: center; }
+        .alert { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 16px; border-radius: 10px; margin: 0 0 20px; font-weight: 600; font-size: 0.9rem; text-align: left; box-sizing: border-box; }
         .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
@@ -226,7 +248,7 @@ if (count($patient_names) > 0) {
 <div class="topbar">
     <div class="topbar-brand">
         <button class="hamburger-btn" onclick="toggleSidebar()"><i class="fa fa-bars"></i></button>
-        <img src="image/logo.png" alt="Alawihao" class="logo-img">
+        <img src="image/logo.jpg?v=<?= time() ?>" alt="Alawihao" class="logo-img">
         <span class="page-label">My Appointments</span>
     </div>
     <?php include 'notif_bell.php'; ?>

@@ -15,7 +15,7 @@ function notify_user($conn, $patient_name, $schedule_id, $title, $message, $type
 
     // Try maternal_registration first
     $uid = null;
-    $s = $conn->prepare("SELECT user_id FROM maternal_registration WHERE TRIM(CONCAT(client_fname,' ',client_lname)) = ? LIMIT 1");
+    $s = $conn->prepare("SELECT user_id FROM maternal_registration WHERE LOWER(TRIM(CONCAT(client_fname,' ',client_lname))) = LOWER(TRIM(?)) LIMIT 1");
     $s->bind_param("s", $patient_name);
     $s->execute();
     $r = $s->get_result()->fetch_assoc();
@@ -24,7 +24,7 @@ function notify_user($conn, $patient_name, $schedule_id, $title, $message, $type
 
     // Fall back to children table
     if (!$uid) {
-        $s2 = $conn->prepare("SELECT user_id FROM children WHERE TRIM(child_name) = ? LIMIT 1");
+        $s2 = $conn->prepare("SELECT user_id FROM children WHERE LOWER(TRIM(child_name)) = LOWER(TRIM(?)) LIMIT 1");
         $s2->bind_param("s", $patient_name);
         $s2->execute();
         $r2 = $s2->get_result()->fetch_assoc();
@@ -162,6 +162,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_schedule'])) {
 // Handle Delete Schedule
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_schedule'])) {
     $id = intval($_POST['schedule_id']);
+    $sched = $conn->query("SELECT patient_name, service_type, schedule_date FROM schedules WHERE id = $id")->fetch_assoc();
+
+    if ($sched) {
+        $date_fmt = date('F j, Y', strtotime($sched['schedule_date']));
+        notify_user($conn, $sched['patient_name'], $id,
+            "Schedule Cancelled",
+            "Your {$sched['service_type']} schedule on {$date_fmt} was cancelled by the health center.",
+            'cancelled_schedule'
+        );
+    }
+
     $sql = "DELETE FROM schedules WHERE id = ?";
     if ($stmt = $conn->prepare($sql)) {
         $stmt->bind_param("i", $id);

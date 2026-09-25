@@ -64,8 +64,11 @@ $notif_path = $notif_path ?? '';
                 // dropdown does NOT trigger the document close-listener
                 list.innerHTML = data.notifications.map(function(n) {
                     var url = getNotifUrl(n);
+                    // Store url as data attribute to avoid quote/special char issues in onclick
                     return '<div class="notif-item ' + (n.is_read ? '' : 'unread') + '" '
-                         + 'onclick="event.stopPropagation(); markRead(' + n.id + (url ? ", '" + url + "'" : '') + ')" '
+                         + 'data-notif-id="' + n.id + '" '
+                         + 'data-notif-url="' + (url || '') + '" '
+                         + 'onclick="event.stopPropagation(); handleNotifClick(this)" '
                          + 'style="cursor:pointer;">'
                          + '<div class="notif-title">' + n.title + '</div>'
                          + '<div class="notif-msg">'   + n.message + '</div>'
@@ -90,22 +93,65 @@ $notif_path = $notif_path ?? '';
     // ── Redirect URL per notification type ─────────────────────
     function getNotifUrl(n) {
         var type = (n.type || '').toLowerCase();
+        var sid  = n.schedule_id || 0;
+
         if (IS_ADMIN) {
+            // Reschedule request from user → go directly to reschedule tab
             if (type === 'reschedule_request')
                 return 'schedule_management.php?tab=reschedTab';
-            if (type === 'new_registration' || type === 'registration')
-                return 'super_admin_dashboard.php';
+
+            // Schedule was rescheduled by admin/super admin → show schedule management
             if (type === 'updated_schedule')
                 return 'schedule_management.php';
+
+            // Appointment completed → completed tab
+            if (type === 'completed_schedule')
+                return 'schedule_management.php?tab=completedTab';
+
+            // New patient registration → super admin dashboard approval section
+            if (type === 'new_registration' || type === 'registration')
+                return 'super_admin_dashboard.php';
+
+            // Reminder → schedule management
+            if (type === 'reminder')
+                return 'schedule_management.php';
+
+            // Worker approval → super admin dashboard
+            if (type === 'worker_approved' || type === 'worker_rejected')
+                return 'super_admin_dashboard.php';
+
+            // Default → schedule management
+            return 'schedule_management.php';
+
         } else {
+            // User side
+            // Reschedule approved/rejected → user schedule page
             if (type === 'reschedule_request' || type === 'updated_schedule'
-                || type === 'new_schedule'    || type === 'schedule_approved')
+                || type === 'new_schedule'    || type === 'schedule_approved'
+                || type === 'reminder')
                 return 'user_schedule.php';
+
+            // Registration approved / completed appointment
+            if (type === 'completed_schedule')
+                return 'user_schedule.php';
+
+            // Cancelled schedule
+            if (type === 'cancelled_schedule')
+                return 'user_schedule.php';
+
+            // Account approved / registration confirmed
             if (type === 'registration' || type === 'approved')
                 return 'user_dashboard.php';
         }
         return null;
     }
+
+    // ── Handle notification click via data attributes ──────────
+    window.handleNotifClick = function(el) {
+        var id  = el.getAttribute('data-notif-id');
+        var url = el.getAttribute('data-notif-url');
+        markRead(id, url || null);
+    };
 
     // ── Mark as read → redirect or refresh list ─────────────────
     window.markRead = function(id, url) {
@@ -151,7 +197,14 @@ $notif_path = $notif_path ?? '';
     });
 
     // ── Auto-fetch every 30s ───────────────────────────────────
-    fetchNotifications();
+    // Wait for DOM to be ready before first fetch
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchNotifications();
+        });
+    } else {
+        fetchNotifications();
+    }
     setInterval(fetchNotifications, 30000);
 })();
 </script>

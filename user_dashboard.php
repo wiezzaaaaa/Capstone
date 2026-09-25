@@ -10,6 +10,7 @@ $name = htmlspecialchars($_SESSION['name'] ?? 'Nanay');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Health Hub | Alawihao Health Center</title>
+    <?php $notif_path=''; include 'notif_assets.php'; ?>
     <script src="theme.js"></script>
     <link rel="stylesheet" href="theme.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -444,7 +445,7 @@ $name = htmlspecialchars($_SESSION['name'] ?? 'Nanay');
                 <i class="fa fa-bars"></i>
             </button>
 
-            <img src="image/logo.png" alt="Brgy Logo" style="width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid var(--green);">
+            <img src="image/logo.jpg?v=<?= time() ?>" alt="Brgy Logo" style="width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid var(--green);">
             <div class="logo-text">
                 <span>Barangay Alawihao Health Center</span>
                 <strong>ALAWIHAO HEALTH HUB</strong>
@@ -584,7 +585,7 @@ $name = htmlspecialchars($_SESSION['name'] ?? 'Nanay');
             <div class="footer-top">
                 <div>
                     <div class="footer-brand">
-                        <img src="image/logo.png" alt="Brgy Logo" onerror="this.style.display='none'">
+                        <img src="image/logo.jpg?v=<?= time() ?>" alt="Brgy Logo" onerror="this.style.display='none'">
                         <div class="footer-brand-text">
                             <h4>Barangay Alawihao Health Center</h4>
                             <span>Alawihao, Daet, Camarines Norte</span>
