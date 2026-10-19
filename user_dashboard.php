@@ -295,32 +295,36 @@ $name = htmlspecialchars($_SESSION['name'] ?? 'Nanay');
         .site-footer {
             background: var(--white);
             border-top: 3px solid var(--green);
-            padding: 28px 30px 20px;
+            padding: 36px 20px 20px;
             color: var(--text);
             width: 100%;
-            margin-top: 50px;
+            margin-top: auto;
         }
-        .footer-inner { max-width: 1100px; margin: 0 auto; }
+        .footer-inner { width: 100%; margin: 0; }
         .footer-top {
             display: grid;
-            grid-template-columns: 1.6fr 1fr 1fr;
-            gap: 30px;
+            grid-template-columns: 1.8fr 1fr 1fr;
+            gap: 36px;
             padding-bottom: 20px;
-            border-bottom: 1px solid var(--card-border);
-            margin-bottom: 18px;
+            border-bottom: 1px solid #e0e8dc;
+            margin-bottom: 16px;
         }
-        @media (max-width: 768px) {
+        @media (max-width: 700px) {
             .footer-top { grid-template-columns: 1fr; gap: 20px; }
+        }
+        @media (max-width: 600px) {
+            .site-footer { padding: 24px 20px 18px; }
+            .footer-bottom { flex-direction: column; align-items: flex-start; }
         }
         .footer-brand { display: flex; align-items: flex-start; gap: 12px; }
         .footer-brand img {
-            width: 48px; height: 48px; border-radius: 50%;
+            width: 46px; height: 46px; border-radius: 50%;
             object-fit: cover;
             border: 2px solid var(--green);
             flex-shrink: 0;
         }
         .footer-brand-text h4 {
-            font-size: 0.9rem; font-weight: 700; color: var(--green);
+            font-size: 0.88rem; font-weight: 700; color: var(--green);
             line-height: 1.3; margin-bottom: 3px;
             font-family: 'Playfair Display', serif;
         }
@@ -333,26 +337,28 @@ $name = htmlspecialchars($_SESSION['name'] ?? 'Nanay');
             color: var(--muted);
             margin-top: 8px;
             line-height: 1.5;
+            font-style: italic;
         }
         .footer-col h5 {
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             font-weight: 700;
             color: var(--green);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
             margin-bottom: 10px;
-            padding-bottom: 6px;
-            border-bottom: 1px solid #D0E4C0;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #D8E8C8;
         }
         .footer-col ul { list-style: none; padding: 0; margin: 0; }
         .footer-col ul li {
-            font-size: 0.78rem;
+            font-size: 0.77rem;
             color: var(--text);
-            margin-bottom: 6px;
+            padding: 4px 0;
             display: flex;
             align-items: flex-start;
-            gap: 8px;
+            gap: 7px;
             line-height: 1.4;
+            min-width: 0;
         }
         .footer-col ul li i, .footer-col ul li img {
             color: var(--green);
@@ -361,7 +367,7 @@ $name = htmlspecialchars($_SESSION['name'] ?? 'Nanay');
             flex-shrink: 0;
         }
         .footer-col ul li strong { color: var(--green); }
-        .footer-col a { color: var(--accent); text-decoration: none; }
+        .footer-col a { color: var(--green); text-decoration: none; overflow-wrap: anywhere; }
         .footer-col a:hover { text-decoration: underline; }
         .footer-bottom {
             display: flex;
@@ -376,12 +382,15 @@ $name = htmlspecialchars($_SESSION['name'] ?? 'Nanay');
         }
         .footer-badge {
             display: inline-flex; align-items: center; gap: 5px;
-            background: var(--bg);
+            background: #eef6e4;
+            border: 1px solid #C8E0A8;
             padding: 3px 10px;
-            border-radius: 12px;
+            border-radius: 4px;
             font-size: 0.68rem;
             color: var(--green);
-            font-weight: 600;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
         }
 
         /* NOTIFICATION BELL */
